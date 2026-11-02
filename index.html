@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game Browser</title>
+  </head>
+  <body style="background-color: black; color: white; padding: 0; margin: 0">
+    <h1 style="text-align: center">Game Browser</h1>
+
+    <div
+      style="
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        align-items: center;
+      "
+    >
+      <input
+        id="searchBox"
+        style="
+          width: 500px;
+          text-align: center;
+          padding: 10px;
+
+          border: 1px solid white;
+          border-radius: 5px;
+        "
+        type="search"
+        placeholder="search your favourite game"
+      />
+      <button
+        onclick="searchBtn()"
+        style="
+          border: 0px solid white;
+          border-radius: 5px;
+          background-color: greenyellow;
+          padding: 10px;
+        "
+      >
+        search
+      </button>
+    </div>
+    <div
+      id="gameBox"
+      style="
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        border: 2px solid wheat;
+        border-radius: 5px;
+        padding: 50px;
+        margin: 40px;
+        background-color: #fff;
+        color: black;
+      "
+    >
+      <div
+        id="thumbnail"
+        style="display: flex; justify-content: space-around; margin-top: 40px"
+      ></div>
+      <h3 id="title" style="text-align: center">Title</h3>
+      <div
+        style="
+          display: flex;
+          justify-content: center;
+          flex-direction: row;
+          gap: 60px;
+        "
+      >
+        <h5 id="genre">Genre</h5>
+        <h5 id="platform">Platform</h5>
+        <h5 id="releaseDate">Release date</h5>
+      </div>
+      <button
+        onclick="addTofav()"
+        style="
+          border: 0.5px solid black;
+          border-radius: 5px;
+          background-color: rgb(255, 69, 165);
+          color: white;
+          padding: 5px;
+        "
+      >
+        Add to favourites
+      </button>
+    </div>
+
+    <div style="margin: 30px">
+      <h2 style="text-align: center">Favourites</h2>
+      <table style="padding: 5px; border: 1px solid white; width: 100%">
+        <thead style="background-color: rgb(147, 102, 62); color: white">
+          <tr>
+            <th style="border: 1px solid wheat; padding: 5px">Game</th>
+            <th style="border: 1px solid wheat; padding: 5px">Title</th>
+            <th style="border: 1px solid wheat; padding: 5px">Action</th>
+          </tr>
+        </thead>
+        <tbody id="result"></tbody>
+      </table>
+    </div>
+  </body>
+  <script>
+    let apiRes = null;
+    let favourites = JSON.parse(localStorage.getItem("GameData")) || [];
+
+    const getData = async () => {
+      try {
+        apiRes = await fetch("https://www.freetogame.com/api/games");
+        apiRes = await apiRes.json();
+        console.log(apiRes);
+      } catch (error) {
+        console.log(error);
+        alert("error occured");
+      }
+    };
+
+    getData();
+    const searchBtn = () => {
+      let searchValue = document.querySelector("#searchBox").value;
+
+      let searchData = apiRes.find(
+        (eachData) => eachData.title === searchValue,
+      );
+
+      console.log(searchData);
+      document.querySelector("#thumbnail").innerHTML =
+        `<img src="${searchData.thumbnail}" alt="..." />`;
+      document.querySelector("#title").innerText = searchData.title;
+      document.querySelector("#genre").innerText = searchData.genre;
+      document.querySelector("#platform").innerText = searchData.platform;
+      document.querySelector("#releaseDate").innerText =
+        searchData.release_date;
+    };
+
+    const addTofav = () => {
+      favourites.unshift(searchData);
+      let jsonData = JSON.stringify(favourites);
+      localStorage.setItem("GameData", jsonData);
+      showFavourites();
+      alert("added to favourites");
+    };
+    const showFavourites = () => {
+      favourites = JSON.parse(localStorage.getItem("GameData")) || [];
+      let resultEl = document.querySelector("#result");
+      resultEl.innerHTML = "";
+
+      favourites.map(
+        (eachData) =>
+          (resultEl.innerHTML += `<tr>
+            <td>${eachData.thumbnail}</td>
+            <td>${eachData.title}</td>
+            <td>
+              <button onclick="delData()"
+                style="
+                  background-color: red;
+                  color: white;
+                  border: 0.5px solid black;
+                  border-radius: 5px;
+                  padding: 5px;
+                "
+              >
+                Remove
+              </button>
+            </td>
+          </tr>`),
+      );
+    };
+    showFavourites();
+
+    const delData = (dGame) => {
+      favourites = JSON.parse(localStorage.getItem("GameData"));
+      let filteredData = favourites.filter((eachData) => eachData.id != dGame);
+      localStorage.setItem("GameData", JSON.stringify(filteredData));
+      alert("deleted");
+      showFavourites();
+    };
+  </script>
+</html>
